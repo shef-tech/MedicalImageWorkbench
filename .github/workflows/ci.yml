@@ -1,0 +1,55 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Windows build and automated tests
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "true"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.403"
+
+      - name: Restore dependencies
+        run: dotnet restore MedicalImageWorkbench.slnx
+
+      - name: Build solution
+        run: >
+          dotnet build MedicalImageWorkbench.slnx
+          --configuration Release
+          --no-restore
+
+      - name: Run automated tests
+        run: >
+          dotnet test tests/Workbench.Tests/Workbench.Tests.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --logger "trx;LogFileName=tests.trx"
+          --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 7

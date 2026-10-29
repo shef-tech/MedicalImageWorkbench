@@ -1,0 +1,30 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# Runtime databases and image storage
+**/App_Data/
+*.db
+*.db-shm
+*.db-wal
+
+# Test and benchmark outputs
+**/TestResults/
+**/coverage/
+**/BenchmarkDotNet.Artifacts/
+
+# Editor files
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+
+# Operating system files
+Thumbs.db
+.DS_Store

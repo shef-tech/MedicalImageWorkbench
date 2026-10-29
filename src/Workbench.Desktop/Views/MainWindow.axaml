@@ -1,0 +1,249 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Workbench.Desktop.ViewModels"
+    x:Class="Workbench.Desktop.Views.MainWindow"
+    x:DataType="vm:ImageLibraryViewModel"
+    Width="1250"
+    Height="850"
+    MinWidth="1000"
+    MinHeight="650"
+    Title="Medical Image Analysis Workbench">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="16">
+
+        <WrapPanel Grid.Row="0"
+                   Margin="0,0,0,12"
+                   IsEnabled="{Binding CanInteract}">
+
+            <Button Margin="0,0,10,8"
+                    Content="Import image" Click="Import_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Refresh library" Click="Refresh_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Search library" Click="SearchLibrary_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Edit metadata" Click="EditMetadata_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Open original" Click="Open_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Grayscale" Click="Grayscale_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Show annotations"
+                    Click="ShowAnnotations_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Draw annotation"
+                    Click="DrawAnnotation_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Manage annotations"
+                    Click="ManageAnnotations_Click" />
+
+            <Button Margin="0,0,10,8"
+                    Content="Batch processing"
+                    Click="BatchProcessing_Click" />
+
+        </WrapPanel>
+
+        <Border Grid.Row="1"
+                Padding="12"
+                Margin="0,0,0,12"
+                Background="#EEEEEE"
+                IsEnabled="{Binding CanInteract}">
+
+            <Grid ColumnDefinitions="*,*,Auto,Auto">
+
+                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                    <TextBlock Text="{Binding Brightness,
+                        StringFormat='Brightness: {0:F0}'}" />
+                    <Slider Minimum="-100" Maximum="100"
+                            Value="{Binding Brightness, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                    <TextBlock Text="{Binding Contrast,
+                        StringFormat='Contrast: {0:F2}'}" />
+                    <Slider Minimum="0.1" Maximum="3"
+                            Value="{Binding Contrast, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Button Grid.Column="2"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        Content="Apply adjustments"
+                        Click="Adjust_Click" />
+
+                <Button Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Content="Reset sliders"
+                        Click="Reset_Click" />
+
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="2"
+                Padding="12"
+                Margin="0,0,0,12"
+                Background="#EEEEEE"
+                IsEnabled="{Binding CanInteract}">
+
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+
+                <StackPanel Margin="0,0,16,0">
+                    <TextBlock Text="{Binding Threshold,
+                        StringFormat='Threshold cutoff: {0:F0}'}" />
+                    <Slider Minimum="0" Maximum="255"
+                            TickFrequency="1"
+                            IsSnapToTickEnabled="True"
+                            Value="{Binding Threshold, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Margin="0,0,20,0"
+                        VerticalAlignment="Center"
+                        Content="Apply threshold"
+                        Click="Threshold_Click" />
+
+                <TextBlock Grid.Column="2"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Center"
+                           Text="Width (pixels)" />
+
+                <NumericUpDown Grid.Column="3"
+                               Width="130"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="8000"
+                               Increment="1"
+                               FormatString="0"
+                               Value="{Binding ResizeWidth, Mode=TwoWay}" />
+
+                <Button Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Content="Resize"
+                        Click="Resize_Click" />
+
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    Margin="0,0,0,12">
+
+            <TextBlock Text="Zoom" VerticalAlignment="Center" />
+
+            <Slider x:Name="ZoomSlider"
+                    Width="220"
+                    Minimum="0.01"
+                    Maximum="3"
+                    Value="1"
+                    SmallChange="0.05" />
+
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding #ZoomSlider.Value,
+                           StringFormat='{}{0:F2}×'}" />
+
+            <Button Content="Fit to window" Click="Fit_Click" />
+            <Button Content="100%" Click="ActualSize_Click" />
+
+        </StackPanel>
+
+        <Grid Grid.Row="4" ColumnDefinitions="280,*">
+
+            <ListBox Margin="0,0,16,0"
+                     IsEnabled="{Binding CanInteract}"
+                     ItemsSource="{Binding Images}"
+                     SelectedItem="{Binding SelectedImage, Mode=TwoWay}">
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ImageItem">
+
+                        <Grid ColumnDefinitions="72,*" Margin="0,6">
+
+                            <Border Width="64"
+                                    Height="64"
+                                    Background="#303642">
+
+                                <Image Source="{Binding Thumbnail}"
+                                       Stretch="Uniform" />
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding OriginalFileName}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock
+                                    Text="{Binding Width,
+                                        StringFormat='Width: {0} px'}"
+                                    FontSize="11" />
+
+                                <TextBlock
+                                    Text="{Binding Height,
+                                        StringFormat='Height: {0} px'}"
+                                    FontSize="11" />
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
+            </ListBox>
+
+            <Border Grid.Column="1"
+                    Background="#202530"
+                    Padding="12">
+
+                <ScrollViewer x:Name="ImageScroller"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+
+                    <LayoutTransformControl
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                        <LayoutTransformControl.LayoutTransform>
+                            <ScaleTransform
+                                ScaleX="{Binding #ZoomSlider.Value}"
+                                ScaleY="{Binding #ZoomSlider.Value}" />
+                        </LayoutTransformControl.LayoutTransform>
+
+                        <Grid>
+                            <Image x:Name="PreviewImage"
+                                   Source="{Binding Preview}"
+                                   Stretch="None" />
+
+                            <Canvas x:Name="AnnotationCanvas"
+                                    IsHitTestVisible="False"
+                                    ClipToBounds="True" />
+                        </Grid>
+
+                    </LayoutTransformControl>
+
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+
+        <TextBlock Grid.Row="5"
+                   Margin="0,12,0,0"
+                   Text="{Binding Status}"
+                   TextWrapping="Wrap" />
+
+    </Grid>
+</Window>
