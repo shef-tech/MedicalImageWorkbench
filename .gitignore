@@ -2,6 +2,9 @@
 **/bin/
 **/obj/
 
+# Published packages
+/artifacts/
+
 # Runtime databases and image storage
 **/App_Data/
 *.db

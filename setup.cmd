@@ -9,19 +9,63 @@ dotnet --version
 if errorlevel 1 goto failure
 
 echo.
-echo === Preparing local tools ===
-if not exist ".config" mkdir ".config"
+echo === Finding the local tool manifest ===
 
-if not exist ".config\dotnet-tools.json" (
-    dotnet new tool-manifest
-    if errorlevel 1 goto failure
+set "WorkbenchToolManifest="
 
-    dotnet tool install dotnet-ef --version "10.*"
-    if errorlevel 1 goto failure
-) else (
-    dotnet tool restore
-    if errorlevel 1 goto failure
+if exist ".config\dotnet-tools.json" (
+    set "WorkbenchToolManifest=.config\dotnet-tools.json"
 )
+
+if exist "dotnet-tools.json" (
+    set "WorkbenchToolManifest=dotnet-tools.json"
+)
+
+if defined WorkbenchToolManifest goto manifestReady
+
+echo Creating a tool manifest...
+dotnet new tool-manifest
+if errorlevel 1 goto failure
+
+if exist ".config\dotnet-tools.json" (
+    set "WorkbenchToolManifest=.config\dotnet-tools.json"
+)
+
+if exist "dotnet-tools.json" (
+    set "WorkbenchToolManifest=dotnet-tools.json"
+)
+
+if not defined WorkbenchToolManifest (
+    echo Could not locate the created tool manifest.
+    goto failure
+)
+
+:manifestReady
+echo Using %WorkbenchToolManifest%
+
+echo.
+echo === Checking Entity Framework tool registration ===
+
+powershell.exe -NoProfile -Command "try { $manifest = Get-Content -LiteralPath $env:WorkbenchToolManifest -Raw | ConvertFrom-Json; if ($null -eq $manifest.tools.'dotnet-ef') { exit 1 }; exit 0 } catch { exit 2 }"
+
+if errorlevel 2 goto failure
+if errorlevel 1 goto installEfTool
+goto restoreTools
+
+:installEfTool
+dotnet tool install dotnet-ef --version "10.*" --tool-manifest "%WorkbenchToolManifest%"
+if errorlevel 1 goto failure
+
+:restoreTools
+echo.
+echo === Restoring local tools ===
+dotnet tool restore --tool-manifest "%WorkbenchToolManifest%"
+if errorlevel 1 goto failure
+
+echo.
+echo === Checking Entity Framework tool ===
+dotnet ef --version
+if errorlevel 1 goto failure
 
 echo.
 echo === Restoring dependencies ===
